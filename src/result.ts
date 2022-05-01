@@ -1,36 +1,37 @@
 /** Typescript implementation of Rust Result type */
-export class Result<Ok, Err> {
-  private readonly okInner?: Ok;
-  private readonly errInner?: Err;
+export class Result<Ok, Error> {
+  private readonly value: Ok | Error;
   private readonly isOkInner: boolean;
 
-  constructor(isOk: boolean, ok?: Ok, err?: Err) {
+  constructor(isOk: boolean, ok?: Ok, error?: Error) {
     this.isOkInner = isOk;
-    this.okInner = ok;
-    this.errInner = err;
+    if (isOk && error === undefined) {
+      this.value = ok as Ok;
+    } else if (!isOk && ok === undefined) {
+      this.value = error as Error;
+    } else {
+      throw new ResultError('Invalid combination');
+    }
   }
 
   /** Create "ok" value representing successful result */
-  static ok<Ok, Err>(ok: Ok): Result<Ok, Err> {
-    return new Result(true, ok, undefined) as unknown as Result<Ok, Err>;
+  static ok<Ok, Error>(ok: Ok): Result<Ok, Error> {
+    return new Result<Ok, Error>(true, ok, undefined);
   }
 
   /** Create "ok" value with success type `void` */
-  static emptyOk<Ok extends void, Err>(): Result<void, Err> {
-    return new Result(true, undefined, undefined) as unknown as Result<Ok, Err>;
+  static emptyOk<Ok extends void, Error>(): Result<void, Error> {
+    return new Result<Ok, Error>(true, undefined, undefined);
   }
 
   /** Create "error" value representing failure with error result */
-  static err<Ok, Err>(err: Err): Result<Ok, Err> {
-    return new Result(false, undefined, err) as unknown as Result<Ok, Err>;
+  static error<Ok, Error>(error: Error): Result<Ok, Error> {
+    return new Result<Ok, Error>(false, undefined, error);
   }
 
   /** Create "error" value with success type `void` */
-  static emptyErr<Ok, Err extends void>(): Result<Ok, void> {
-    return new Result(false, undefined, undefined) as unknown as Result<
-      Ok,
-      Err
-    >;
+  static emptyError<Ok, Error extends void>(): Result<Ok, void> {
+    return new Result<Ok, Error>(false, undefined, undefined);
   }
 
   /** Checks if Result is ok */
@@ -38,8 +39,8 @@ export class Result<Ok, Err> {
     return this.isOkInner;
   }
 
-  /** Checks if Result is err */
-  public isErr(): boolean {
+  /** Checks if Result is error */
+  public isError(): boolean {
     return !this.isOkInner;
   }
 
@@ -48,76 +49,76 @@ export class Result<Ok, Err> {
     if (this.isOkInner === false) {
       throw new ResultError('Attempted to unwrap error value');
     }
-    return this.okInner as Ok;
+    return this.value as Ok;
   }
 
-  /** Get "ok" value or return `x` if this is an Err */
+  /** Get "ok" value or return `x` if this is an Error */
   public unwrapOr(x: Ok): Ok {
     if (this.isOkInner === false) return x;
-    return this.okInner as Ok;
+    return this.value as Ok;
   }
 
-  /** Get "ok" value or return `f(Err)` if this is an Err */
-  public unwrapOrElse(f: (x: Err) => Ok): Ok {
-    if (this.isOkInner === false) return f(this.errInner as Err);
-    return this.okInner as Ok;
+  /** Get "ok" value or return `f(Error)` if this is an Error */
+  public unwrapOrElse(f: (x: Error) => Ok): Ok {
+    if (this.isOkInner === false) return f(this.value as Error);
+    return this.value as Ok;
   }
 
-  /** Get "err" value or throw error */
-  public unwrapErr(): Err {
+  /** Get "error" value or throw error */
+  public unwrapError(): Error {
     if (this.isOkInner === true) {
-      throw new ResultError('Attempted to unwrapErr an ok value');
+      throw new ResultError('Attempted to unwrapError an ok value');
     }
-    return this.errInner as Err;
+    return this.value as Error;
   }
 
   /** Applies function to result if it is ok and returns new result */
-  public mapOk<O>(f: (ok: Ok) => O): Result<O, Err> {
+  public map<O>(f: (ok: Ok) => O): Result<O, Error> {
     if (this.isOk()) {
       return Result.ok(f(this.unwrap()));
     }
-    return this as unknown as Result<O, Err>;
+    return this as unknown as Result<O, Error>;
   }
 
   /** Applies async function to result if it is ok and returns new result */
-  public async mapOkAsync<O>(
+  public async mapAsync<O>(
     f: (ok: Ok) => Promise<O>,
-  ): Promise<Result<O, Err>> {
+  ): Promise<Result<O, Error>> {
     if (this.isOk()) {
       return Result.ok(await f(this.unwrap()));
     }
-    return this as unknown as Result<O, Err>;
+    return this as unknown as Result<O, Error>;
   }
 
-  /** Maps ok type or throws an `Error` if result is not err */
-  public mapEmptyOk<O>(): Result<O, Err> {
+  /** Maps ok type or throws an `Error` if result is not error */
+  public mapEmptyOk<O>(): Result<O, Error> {
     if (this.isOk()) {
       throw new ResultError(`Can't mapEmptyOk for when ok isn't empty`);
     }
-    return this as unknown as Result<O, Err>;
+    return this as unknown as Result<O, Error>;
   }
 
   /** Applies function to result if it is an error and returns new result */
-  public mapErr<E>(f: (err: Err) => E): Result<Ok, E> {
-    if (this.isErr()) {
-      return Result.err(f(this.unwrapErr()));
+  public mapError<E>(f: (error: Error) => E): Result<Ok, E> {
+    if (this.isError()) {
+      return Result.error(f(this.unwrapError()));
     }
     return this as unknown as Result<Ok, E>;
   }
 
   /** Applies async function to result if it is an error and returns new result */
-  public async mapErrAsync<E>(
-    f: (err: Err) => Promise<E>,
+  public async mapErrorAsync<E>(
+    f: (error: Error) => Promise<E>,
   ): Promise<Result<Ok, E>> {
-    if (this.isErr()) {
-      return Result.err(await f(this.unwrapErr()));
+    if (this.isError()) {
+      return Result.error(await f(this.unwrapError()));
     }
     return this as unknown as Result<Ok, E>;
   }
 
   /** Maps error type or throws an `Error` if result is not ok */
-  public mapEmptyErr<E>(): Result<Ok, E> {
-    if (this.isErr()) {
+  public mapEmptyError<E>(): Result<Ok, E> {
+    if (this.isError()) {
       throw new ResultError(
         `Can't mapEmptyErr for when error isn't empty`,
       );
@@ -125,38 +126,40 @@ export class Result<Ok, Err> {
     return this as unknown as Result<Ok, E>;
   }
 
-  /** Returns `res` if the result is Ok, otherwise returns itself which will be an Err. */
-  public and<O>(res: Result<O, Err>): Result<O, Err> {
+  /** Returns `res` if the result is Ok, otherwise returns itself which will be an Error. */
+  public and<O>(res: Result<O, Error>): Result<O, Error> {
     if (this.isOk()) return res;
     else return this.mapEmptyOk();
   }
 
-  /** Calls `f` if the result is Ok, otherwise returns the Err value of itself. */
-  public andThen<O>(f: (x: Result<Ok, Err>) => Result<O, Err>): Result<O, Err> {
+  /** Calls `f` if the result is Ok, otherwise returns the Error value of itself. */
+  public andThen<O>(
+    f: (x: Result<Ok, Error>) => Result<O, Error>,
+  ): Result<O, Error> {
     if (this.isOk()) return f(this);
     else return this.mapEmptyOk();
   }
 
-  /** Returns `res` if the result is Err, otherwise returns itself which will be an Ok. */
+  /** Returns `res` if the result is Error, otherwise returns itself which will be an Ok. */
   public or<E>(res: Result<Ok, E>): Result<Ok, E> {
-    if (this.isOk()) return this.mapEmptyErr();
+    if (this.isOk()) return this.mapEmptyError();
     else return res;
   }
 
-  /** Calls `f` if the result is Err, otherwise returns the Ok value of itself. */
-  public orElse<E>(f: (x: Result<Ok, Err>) => Result<Ok, E>): Result<Ok, E> {
+  /** Calls `f` if the result is Error, otherwise returns the Ok value of itself. */
+  public orElse<E>(f: (x: Result<Ok, Error>) => Result<Ok, E>): Result<Ok, E> {
     if (this.isOk()) return f(this);
-    else return this.mapEmptyErr();
+    else return this.mapEmptyError();
   }
 
-  /** Returns the inner Ok value or undefined if value is Err */
+  /** Returns the inner Ok value or undefined if value is Error */
   public ok(): Ok | undefined {
-    return this.okInner;
+    return this.isOkInner ? this.value as Ok : undefined;
   }
 
-  /** Returns the inner Err value or undefined if value is Ok */
-  public err(): Err | undefined {
-    return this.errInner;
+  /** Returns the inner Error value or undefined if value is Ok */
+  public error(): Error | undefined {
+    return this.isOkInner ? undefined : this.value as Error;
   }
 }
 

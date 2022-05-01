@@ -5,26 +5,28 @@ function doubleNumber(x: number): number {
   return x + x;
 }
 
-// .mapOk
+// .map
 Deno.test({
-  name: 'Result.ok(x).mapOk(Fn) applies Fn(x)',
-  fn: () => assert(Result.ok(1).mapOk(doubleNumber).unwrap() === 2),
+  name: 'Result.ok(x).map(Fn) applies Fn(x)',
+  fn: () => assert(Result.ok(1).map(doubleNumber).unwrap() === 2),
 });
 
 Deno.test({
-  name: 'Result.err(x).mapOk(Fn) does nothing',
+  name: 'Result.error(x).map(Fn) does nothing',
   fn: () =>
-    assert(Result.err<number, number>(1).mapOk(doubleNumber).unwrapErr() === 1),
+    assert(
+      Result.error<number, number>(1).map(doubleNumber).unwrapError() === 1,
+    ),
 });
 
-// .mapErr
+// .mapError
 Deno.test({
-  name: 'Result.ok(x).mapErr(Fn) does nothing',
+  name: 'Result.ok(x).mapError(Fn) does nothing',
   fn: () =>
-    assert(Result.ok<number, number>(1).mapErr(doubleNumber).unwrap() === 1),
+    assert(Result.ok<number, number>(1).mapError(doubleNumber).unwrap() === 1),
 });
 
 Deno.test({
-  name: 'Result.err(x).mapErr(Fn) applies Fn(x)',
-  fn: () => assert(Result.err(1).mapErr(doubleNumber).unwrapErr() === 2),
+  name: 'Result.error(x).mapError(Fn) applies Fn(x)',
+  fn: () => assert(Result.error(1).mapError(doubleNumber).unwrapError() === 2),
 });

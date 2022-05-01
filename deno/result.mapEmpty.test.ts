@@ -3,10 +3,10 @@ import { Result, ResultError } from '../mod.ts';
 
 // .mapEmptyOk
 Deno.test({
-  name: 'Result.err(x).mapEmptyOk() preserves x but changes ok type',
+  name: 'Result.error(x).mapEmptyOk() preserves x but changes ok type',
   fn: () =>
     assert(
-      Result.err<number, number>(1).mapEmptyOk<string>().unwrapErr() === 1,
+      Result.error<number, number>(1).mapEmptyOk<string>().unwrapError() === 1,
     ),
 });
 
@@ -16,20 +16,20 @@ Deno.test({
     assertThrows(() => Result.ok<number, number>(1).mapEmptyOk(), ResultError),
 });
 
-// .mapEmptyErr
+// .mapEmptyError
 Deno.test({
-  name: 'Result.ok(x).mapEmptyErr() preserves x but changes err type',
+  name: 'Result.ok(x).mapEmptyError() preserves x but changes err type',
   fn: () =>
     assert(
-      Result.ok<number, number>(1).mapEmptyErr<string>().unwrap() === 1,
+      Result.ok<number, number>(1).mapEmptyError<string>().unwrap() === 1,
     ),
 });
 
 Deno.test({
-  name: 'Result.err(x).mapEmptyErr() throws error',
+  name: 'Result.error(x).mapEmptyError() throws error',
   fn: () =>
     assertThrows(
-      () => Result.err<number, number>(1).mapEmptyErr(),
+      () => Result.error<number, number>(1).mapEmptyError(),
       ResultError,
     ),
 });

@@ -7,16 +7,16 @@ Deno.test({
 });
 
 Deno.test({
-  name: 'Result.err(x).unwrap() throws error',
-  fn: () => assertThrows(() => Result.err('abc').unwrap(), ResultError),
+  name: 'Result.error(x).unwrap() throws error',
+  fn: () => assertThrows(() => Result.error('abc').unwrap(), ResultError),
 });
 
 Deno.test({
-  name: 'Result.ok(x).unwrapErr() throws error',
-  fn: () => assertThrows(() => Result.ok('abc').unwrapErr(), ResultError),
+  name: 'Result.ok(x).unwrapError() throws error',
+  fn: () => assertThrows(() => Result.ok('abc').unwrapError(), ResultError),
 });
 
 Deno.test({
-  name: 'Result.err(x).unwrapErr() returns x',
-  fn: () => assert(Result.err('abc').unwrapErr() === 'abc'),
+  name: 'Result.error(x).unwrapError() returns x',
+  fn: () => assert(Result.error('abc').unwrapError() === 'abc'),
 });

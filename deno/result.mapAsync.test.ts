@@ -5,40 +5,40 @@ async function asyncDoubleNumber(x: number): Promise<number> {
   return Promise.resolve(x + x);
 }
 
-// .mapOkAsync
+// .mapAsync
 Deno.test({
-  name: 'Result.ok(x).mapOkAsync(Fn) applies Fn(x)',
+  name: 'Result.ok(x).mapAsync(Fn) applies Fn(x)',
   fn: async () => {
     const r1 = Result.ok(1);
-    const r2 = await r1.mapOkAsync(asyncDoubleNumber);
+    const r2 = await r1.mapAsync(asyncDoubleNumber);
     assert(r2.unwrap() === 2);
   },
 });
 
 Deno.test({
-  name: 'Result.err(x).mapOkAsync(Fn) does nothing',
+  name: 'Result.error(x).mapAsync(Fn) does nothing',
   fn: async () => {
-    const r1 = Result.err<number, number>(1);
-    const r2 = await r1.mapOkAsync(asyncDoubleNumber);
-    assert(r2.unwrapErr() === 1);
+    const r1 = Result.error<number, number>(1);
+    const r2 = await r1.mapAsync(asyncDoubleNumber);
+    assert(r2.unwrapError() === 1);
   },
 });
 
-// .mapErrAsync
+// .mapErrorAsync
 Deno.test({
-  name: 'Result.ok(x).mapErrAsync(Fn) does nothing',
+  name: 'Result.ok(x).mapErrorAsync(Fn) does nothing',
   fn: async () => {
     const r1 = Result.ok<number, number>(1);
-    const r2 = await r1.mapErrAsync(asyncDoubleNumber);
+    const r2 = await r1.mapErrorAsync(asyncDoubleNumber);
     assert(r2.unwrap() === 1);
   },
 });
 
 Deno.test({
-  name: 'Result.err(x).mapErrAsync(Fn) applies Fn(x)',
+  name: 'Result.error(x).mapErrorAsync(Fn) applies Fn(x)',
   fn: async () => {
-    const r1 = Result.err<number, number>(1);
-    const r2 = await r1.mapErrAsync(asyncDoubleNumber);
-    assert(r2.unwrapErr() === 2);
+    const r1 = Result.error<number, number>(1);
+    const r2 = await r1.mapErrorAsync(asyncDoubleNumber);
+    assert(r2.unwrapError() === 2);
   },
 });

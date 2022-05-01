@@ -7,16 +7,16 @@ Deno.test({
 });
 
 Deno.test({
-  name: 'Result.emptyOk() returns false for .isErr()',
-  fn: () => assert(Result.emptyOk().isErr() === false),
+  name: 'Result.emptyOk() returns false for .isError()',
+  fn: () => assert(Result.emptyOk().isError() === false),
 });
 
 Deno.test({
-  name: 'Result.emptyErr() returns false for .isOk()',
-  fn: () => assert(Result.emptyErr().isOk() === false),
+  name: 'Result.emptyError() returns false for .isOk()',
+  fn: () => assert(Result.emptyError().isOk() === false),
 });
 
 Deno.test({
-  name: 'Result.emptyErr() returns true for .isErr()',
-  fn: () => assert(Result.emptyErr().isErr() === true),
+  name: 'Result.emptyError() returns true for .isError()',
+  fn: () => assert(Result.emptyError().isError() === true),
 });
