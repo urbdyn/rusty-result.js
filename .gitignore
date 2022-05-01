@@ -1,3 +1,6 @@
+# Repo specific
+dist/
+
 # Logs
 logs
 *.log
