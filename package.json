@@ -1,6 +1,6 @@
 {
   "name": "@urbdyn/result",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Typescript implementation of Rust's Result",
   "author": "Urban Dynamics (https://www.urbdyn.com/)",
   "license": "MIT",
@@ -11,7 +11,10 @@
   "homepage": "https://github.com/urbdyn/result.js#readme",
   "url": "https://github.com/urbdyn/result.js/issues",
   "main": "dist/result.js",
-  "files": [],
+  "files": [
+    "dist/",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "deno test",
