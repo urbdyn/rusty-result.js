@@ -15,23 +15,17 @@ export class Result<Ok, Error> {
   }
 
   /** Create "ok" value representing successful result */
-  static ok<Ok, Error>(ok: Ok): Result<Ok, Error> {
+  static ok<Ok, Error>(ok: Ok): Result<Ok, Error>;
+  static ok<Error>(): Result<void, Error>;
+  static ok<Ok, Error>(ok?: Ok): Result<Ok, Error> {
     return new Result<Ok, Error>(true, ok, undefined);
   }
 
-  /** Create "ok" value with success type `void` */
-  static emptyOk<Ok extends void, Error>(): Result<void, Error> {
-    return new Result<Ok, Error>(true, undefined, undefined);
-  }
-
   /** Create "error" value representing failure with error result */
-  static error<Ok, Error>(error: Error): Result<Ok, Error> {
+  static error<Ok, Error>(error: Error): Result<Ok, Error>;
+  static error<Ok>(): Result<Ok, void>;
+  static error<Ok, Error>(error?: Error): Result<Ok, Error> {
     return new Result<Ok, Error>(false, undefined, error);
-  }
-
-  /** Create "error" value with success type `void` */
-  static emptyError<Ok, Error extends void>(): Result<Ok, void> {
-    return new Result<Ok, Error>(false, undefined, undefined);
   }
 
   /** Checks if Result is ok */
@@ -44,7 +38,10 @@ export class Result<Ok, Error> {
     return !this.isOkInner;
   }
 
-  /** Get "ok" value or throw error */
+  /**
+   * Get "ok" value or throw error. Note in the "empty case" that type `Ok` is `void` then
+   * `undefined` is returned.
+   */
   public unwrap(): Ok {
     if (this.isOkInner === false) {
       throw new ResultError('Attempted to unwrap error value');
@@ -64,7 +61,10 @@ export class Result<Ok, Error> {
     return this.value as Ok;
   }
 
-  /** Get "error" value or throw error */
+  /**
+   * Get "error" value or throw error. Note in the "empty case" that type `Error` is `void` then
+   * `undefined` is returned.
+   */
   public unwrapError(): Error {
     if (this.isOkInner === true) {
       throw new ResultError('Attempted to unwrapError an ok value');
@@ -80,17 +80,7 @@ export class Result<Ok, Error> {
     return this as unknown as Result<O, Error>;
   }
 
-  /** Applies async function to result if it is ok and returns new result */
-  public async mapAsync<O>(
-    f: (ok: Ok) => Promise<O>,
-  ): Promise<Result<O, Error>> {
-    if (this.isOk()) {
-      return Result.ok(await f(this.unwrap()));
-    }
-    return this as unknown as Result<O, Error>;
-  }
-
-  /** Maps ok type or throws an `Error` if result is not error */
+  /** Maps `Ok` type or throws an `Error` if result is not error */
   public mapEmptyOk<O>(): Result<O, Error> {
     if (this.isOk()) {
       throw new ResultError(`Can't mapEmptyOk for when ok isn't empty`);
@@ -106,17 +96,7 @@ export class Result<Ok, Error> {
     return this as unknown as Result<Ok, E>;
   }
 
-  /** Applies async function to result if it is an error and returns new result */
-  public async mapErrorAsync<E>(
-    f: (error: Error) => Promise<E>,
-  ): Promise<Result<Ok, E>> {
-    if (this.isError()) {
-      return Result.error(await f(this.unwrapError()));
-    }
-    return this as unknown as Result<Ok, E>;
-  }
-
-  /** Maps error type or throws an `Error` if result is not ok */
+  /** Maps `Error` type or throws an `Error` if result is not ok */
   public mapEmptyError<E>(): Result<Ok, E> {
     if (this.isError()) {
       throw new ResultError(
@@ -134,9 +114,9 @@ export class Result<Ok, Error> {
 
   /** Calls `f` if the result is Ok, otherwise returns the Error value of itself. */
   public andThen<O>(
-    f: (x: Result<Ok, Error>) => Result<O, Error>,
+    f: (x: Ok) => Result<O, Error>,
   ): Result<O, Error> {
-    if (this.isOk()) return f(this);
+    if (this.isOk()) return f(this.value as Ok);
     else return this.mapEmptyOk();
   }
 
@@ -147,8 +127,8 @@ export class Result<Ok, Error> {
   }
 
   /** Calls `f` if the result is Error, otherwise returns the Ok value of itself. */
-  public orElse<E>(f: (x: Result<Ok, Error>) => Result<Ok, E>): Result<Ok, E> {
-    if (this.isOk()) return f(this);
+  public orElse<E>(f: (x: Error) => Result<Ok, E>): Result<Ok, E> {
+    if (this.isError()) return f(this.value as Error);
     else return this.mapEmptyError();
   }
 
