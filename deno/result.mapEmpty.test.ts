@@ -1,12 +1,13 @@
-import { assert, assertThrows } from '../test_deps.ts';
+import { assertEquals, assertThrows } from '../test_deps.ts';
 import { Result, ResultError } from '../mod.ts';
 
 // .mapEmptyOk
 Deno.test({
   name: 'Result.error(x).mapEmptyOk() preserves x but changes ok type',
   fn: () =>
-    assert(
-      Result.error<number, number>(1).mapEmptyOk<string>().unwrapError() === 1,
+    assertEquals(
+      Result.error<number, number>(1).mapEmptyOk<string>().unwrapError(),
+      1,
     ),
 });
 
@@ -20,8 +21,9 @@ Deno.test({
 Deno.test({
   name: 'Result.ok(x).mapEmptyError() preserves x but changes err type',
   fn: () =>
-    assert(
-      Result.ok<number, number>(1).mapEmptyError<string>().unwrap() === 1,
+    assertEquals(
+      Result.ok<number, number>(1).mapEmptyError<string>().unwrap(),
+      1,
     ),
 });
 

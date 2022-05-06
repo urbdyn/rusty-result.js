@@ -1,5 +1,6 @@
 # Repo specific
 dist/
+cov_profile/
 
 # Logs
 logs

@@ -23,8 +23,8 @@
   },
   "fmt": {
     "files": {
-      "include": [".", "test_deps.ts", "deno/", "src/"],
-      "exclude": ["dist/", "node_modules/"]
+      "include": ["."],
+      "exclude": ["dist/", "node_modules/", "cov_profile/"]
     },
     "options": {
       "useTabs": false,

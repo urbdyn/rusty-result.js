@@ -1,9 +1,29 @@
-import { assert, assertThrows } from '../test_deps.ts';
+import { assertEquals, assertThrows } from '../test_deps.ts';
 import { Result, ResultError } from '../mod.ts';
 
 Deno.test({
+  name: 'Result.ok().unwrap() returns undefined',
+  fn: () => assertEquals(Result.ok().unwrap(), undefined),
+});
+
+Deno.test({
+  name: 'Result.error().unwrap() throws error',
+  fn: () => assertThrows(() => Result.error().unwrap(), ResultError),
+});
+
+Deno.test({
+  name: 'Result.ok().unwrapError() throws error',
+  fn: () => assertThrows(() => Result.ok().unwrapError(), ResultError),
+});
+
+Deno.test({
+  name: 'Result.error().unwrapError() returns undefined',
+  fn: () => assertEquals(Result.error().unwrapError(), undefined),
+});
+
+Deno.test({
   name: 'Result.ok(x).unwrap() returns x',
-  fn: () => assert(Result.ok('abc').unwrap() === 'abc'),
+  fn: () => assertEquals(Result.ok('abc').unwrap(), 'abc'),
 });
 
 Deno.test({
@@ -18,5 +38,5 @@ Deno.test({
 
 Deno.test({
   name: 'Result.error(x).unwrapError() returns x',
-  fn: () => assert(Result.error('abc').unwrapError() === 'abc'),
+  fn: () => assertEquals(Result.error('abc').unwrapError(), 'abc'),
 });
