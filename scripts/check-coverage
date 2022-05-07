@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -e
+
+repo_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
+
+help_text="
+check-coverage
+
+This script check test coverage output in cov_profile/ directory.
+
+Usage: build_nexe MININUM_PERCENT
+
+"
+
+case "$1" in
+  "help"|"--help"|"-h"|"")
+    echo "$help_text"
+    exit 0
+    ;;
+  *)
+    integer_regex='^[0-9]+$'
+    if ! [[ $1 =~ $integer_regex ]] ; then
+      echo "error: Input is not an integer: $1"
+      exit 1      
+    fi
+    if ! [[ -d "$repo_dir/cov_profile/" ]]; then
+      echo "Code coverage directory not found. Run: deno test --allow-all --coverage=cov_profile/"
+      exit 1
+    fi
+    echo "Running deno coverage report ..."
+    coverage_report="$(deno coverage cov_profile | sed $'s,\x1b\\[[0-9;]*[a-zA-Z],,g')"
+    coverage_stats="$(echo "$coverage_report" | grep -E '^cover \S+ \.\.\.')"
+    failed_files=""
+    echo -e "Checking all files in deno coverage report meet minimum ...\n"
+    while IFS= read -r coverage_stat; do
+      coverage_number="$(echo "$coverage_stat" | rev | cut -d ' ' -f 2 | rev | sed 's|%||g')"
+      if (( $(echo "$coverage_number < $1" | bc -l) )); then
+        failed_files="$failed_files$coverage_stat\n"
+      fi
+    done <<< "$coverage_stats"
+    if [[ "$failed_files" == "" ]]; then
+      echo "PASSED"
+      exit 0
+    else
+      echo "FAILED"
+      echo -e "$failed_files"
+      exit 1
+    fi
+    ;;
+esac
