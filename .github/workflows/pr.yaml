@@ -1,0 +1,63 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches: ['**']
+
+jobs:
+  node_ci:
+    name: Node.js CI
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node_version: ['12.22.12', '14.19.2', '16.15.0']
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node_version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '${{ matrix.node_version }}'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - run: npm pack
+
+  deno_ci:
+    name: Deno CI
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    defaults:
+      run: { shell: bash }
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        deno_version: ['v1.17.0', 'v1.21.1', 'vx.x.x']
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Deno ${{ matrix.deno_version }}
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: '${{ matrix.deno_version }}'
+      - run: deno fmt --check
+        if: matrix.deno_version == 'vx.x.x'
+      - run: deno lint
+        if: matrix.deno_version == 'vx.x.x'
+      - run: deno test --allow-all
+      - name: deno coverage cov_profile/
+        if: matrix.deno_version == 'vx.x.x'
+        run: |
+          rm -rf cov_profile/ || true
+          deno test --allow-all --coverage=cov_profile/ > /dev/null 2>%1
+          deno coverage cov_profile/
+      - name: Check coverage 100%
+        if: matrix.deno_version == 'vx.x.x'
+        run: ./scripts/check-coverage 100
