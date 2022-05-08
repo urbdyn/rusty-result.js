@@ -1,6 +1,6 @@
 {
   "name": "@urbdyn/rusty-result",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Typescript implementation of Rust's Result",
   "author": "Urban Dynamics (https://www.urbdyn.com/)",
   "license": "MIT",
