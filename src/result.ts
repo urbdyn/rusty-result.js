@@ -1,8 +1,40 @@
-/** Typescript implementation of Rust Result type */
+/**
+ * Typescript implementation of Rust Result type.
+ *
+ * ```typescript
+ * // Create an ok Result
+ * const myOkResult = Result.ok(1);
+ * // Create an error Result
+ * const myErrorResult = Result.error(2);
+ * // Create a Result with an explicit ok and error type
+ * const r = Result.error<number, number>(3);
+ *
+ * // Create a function that takes Results
+ * function myResultFunction(r: Result<number, number>): void {
+ *   // Perform operation on ok value and get new Result
+ *   const r2 = r.map((x) => x + 10);
+ *   // Perform operation on ok value and on error value and get new Result
+ *   const r3 = r.map((x) => x + 10).mapError((x) => x - 10);
+ *
+ *   // Do action if Result is ok
+ *   if (r3.isOk()) {
+ *     console.log(`r3 is ok with value of: ${r3.unwrap()}`);
+ *   }
+ *   // Do action if Result is error
+ *   if (r3.isError()) {
+ *     console.log(`r3 is error with value of: ${r3.unwrapError()}`);
+ *   }
+ * }
+ *
+ * // Use Result with a function
+ * myResultFunction(r); // prints: r3 is error with value of: -7
+ * ```
+ */
 export class Result<Ok, Error> {
   private readonly value: Ok | Error;
   private readonly isOkInner: boolean;
 
+  /** AVOID USING THIS. Please use `.ok()` or `.error()` static class methods */
   constructor(isOk: boolean, ok?: Ok, error?: Error) {
     this.isOkInner = isOk;
     if (isOk && error === undefined) {
@@ -14,14 +46,30 @@ export class Result<Ok, Error> {
     }
   }
 
-  /** Create "ok" value representing successful result */
+  /**
+   * Create "ok" value representing successful result.
+   * This can be used to create an ok Result with a value or without one.
+   *
+   * ```typescript
+   * const myStringResult = Result.ok('foo')
+   * const myEmptyResult = Result.ok()
+   * ```
+   */
   static ok<Ok, Error>(ok: Ok): Result<Ok, Error>;
   static ok<Error>(): Result<void, Error>;
   static ok<Ok, Error>(ok?: Ok): Result<Ok, Error> {
     return new Result<Ok, Error>(true, ok, undefined);
   }
 
-  /** Create "error" value representing failure with error result */
+  /**
+   * Create "error" value representing failure with error result.
+   * This can be used to create an error Result with a value or without one.
+   *
+   * ```typescript
+   * const myStringResult = Result.error('bar')
+   * const myEmptyResult = Result.error()
+   * ```
+   */
   static error<Ok, Error>(error: Error): Result<Ok, Error>;
   static error<Ok>(): Result<Ok, void>;
   static error<Ok, Error>(error?: Error): Result<Ok, Error> {
