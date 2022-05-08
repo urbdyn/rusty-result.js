@@ -119,6 +119,8 @@ jobs:
         id: npm_pack
         run: |
           export NPM_TGZ_FILE=$(npm pack)
+          export NPM_TGZ_FILE=$(echo "$NPM_TGZ_FILE" | tail -n 1)
+          echo "NPM_TGZ_FILE=$NPM_TGZ_FILE"
           echo "::set-output name=npm_tgz_file::$NPM_TGZ_FILE"
 
       # Upload NPM tar.gz, linux only
