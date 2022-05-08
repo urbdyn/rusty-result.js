@@ -19,7 +19,7 @@ jobs:
         node_version: ['12.22.12', '14.19.2', '16.15.0']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node_version }}
         uses: actions/setup-node@v3
         with:
@@ -42,7 +42,7 @@ jobs:
         deno_version: ['v1.17.0', 'v1.21.1', 'vx.x.x']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Deno ${{ matrix.deno_version }}
         uses: denoland/setup-deno@v1
         with:

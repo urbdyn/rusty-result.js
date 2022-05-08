@@ -1,0 +1,138 @@
+name: Package Release CI
+on:
+  push:
+    branches: [main]
+    # Ignore all markdown files, all files in the .github directory (but not its
+    # workflows/ directory), and test files. 
+    paths-ignore: ['**.md', '.github/*']
+
+
+jobs:
+
+  # job: create_version
+  create_version:
+    name: Create build version
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      build_version: ${{ steps.gen_version.outputs.new_version }}
+      prod_build: ${{ steps.gen_version.outputs.prod_build }}
+      npm_tag: ${{ steps.gen_version.outputs.npm_tag }}
+    steps:
+      - uses: actions/checkout@v3
+        with: { fetch-depth: '2' }
+      - uses: actions/setup-node@v3
+        with: { node-version-file: '.nvmrc' }
+      - uses: salsify/action-detect-and-tag-new-version@v2
+        id: detect_version
+        with: { create-tag: false }
+
+      - name: Version pre-release
+        id: gen_version
+        run: |
+          set -ex
+          previous_version="${{steps.detect_version.outputs.previous-version}}"
+          current_version="${{steps.detect_version.outputs.current-version}}"
+          if [ "$previous_version" = "$current_version" ]; then
+            echo "Version has NOT changed. This is a dev build."
+            export CURRENT_COMMIT="$(git rev-parse --short HEAD)"
+            export NEW_PACKAGE_VERSION="$(npx semver --increment minor "$current_version")-dev.$CURRENT_COMMIT"
+            echo "::set-output name=new_version::$NEW_PACKAGE_VERSION"
+            echo "::set-output name=prod_build::false"
+            echo "::set-output name=npm_tag::dev"
+          else
+            echo "Version has changed. This is a prod build!"
+            echo "::set-output name=new_version::$current_version"
+            echo "::set-output name=prod_build::true"
+            echo "::set-output name=npm_tag::latest"
+          fi
+
+
+  # job: publish_github_package
+  publish_github_package:
+    name: Publish NPM package to Github
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: ['create_version']
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js from .nvmrc
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com/'
+          scope: '@urbdyn'
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GH_RD_PKG_TOKEN}}
+      - name: Set Version
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Github Actions"
+          npm version --allow-same-version ${{needs.create_version.outputs.build_version}}
+      - run: npm publish --tag ${{needs.create_version.outputs.npm_tag}}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  # job: publish_npm_package
+  publish_npm_package:
+    name: Publish repo release and NPM package
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: ['create_version']
+    if: needs.create_version.outputs.prod_build == 'true'
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js from .nvmrc
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.create_version.outputs.build_version }}
+          release_name: Release ${{ needs.create_version.outputs.build_version }}
+          body: >
+            This release contains the repo source code and a tar.gz of the NPM package.
+            It has been created for proper archiving practices.
+            However, please use the NPM registry to install and use the NPM package!
+          draft: false
+          prerelease: ${{ needs.create_version.outputs.prod_build != 'true' }}
+
+      - run: npm ci
+      - name: Set Version
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Github Actions"
+          npm version --allow-same-version ${{needs.create_version.outputs.build_version}}
+      - name: npm pack
+        id: npm_pack
+        run: |
+          export NPM_TGZ_FILE=$(npm pack)
+          echo "::set-output name=npm_tgz_file::$NPM_TGZ_FILE"
+
+      # Upload NPM tar.gz, linux only
+      - name: Upload Release Asset - tgz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ steps.npm_pack.outputs.npm_tgz_file }}
+          asset_name: ${{ steps.npm_pack.outputs.npm_tgz_file }}
+          asset_content_type: application/gzip
+
+      - run: npm publish
+        if: needs.create_version.outputs.npm_tag == 'latest'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_TOKEN }}
