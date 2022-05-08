@@ -1,15 +1,15 @@
 {
-  "name": "@urbdyn/result",
+  "name": "@urbdyn/rusty-result",
   "version": "0.0.1",
   "description": "Typescript implementation of Rust's Result",
   "author": "Urban Dynamics (https://www.urbdyn.com/)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/urbdyn/result.js.git"
+    "url": "https://github.com/urbdyn/rusty-result.js.git"
   },
-  "homepage": "https://github.com/urbdyn/result.js#readme",
-  "url": "https://github.com/urbdyn/result.js/issues",
+  "homepage": "https://github.com/urbdyn/rusty-result.js#readme",
+  "url": "https://github.com/urbdyn/rusty-result.js/issues",
   "main": "dist/result.js",
   "files": [
     "dist/",
@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsc",
     "test": "deno test",
-    "fmt": "deno fmt"
+    "fmt": "deno fmt",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "typescript": "^4.6.4"
