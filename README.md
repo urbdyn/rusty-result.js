@@ -3,16 +3,25 @@
 ![npm version](https://img.shields.io/npm/v/@urbdyn/rusty-result?color=%2300b300&label=npm%20package)
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@urbdyn/rusty-result)
 
-Zero dependency Typescript implementation of Rust's Result.
+Zero dependency Typescript implementation of Rust's Result avaible via NPM or Deno Land!
 
 Rusty-Result aims to be a Typescript/Javascript interpretation of Result from Rust.
-[View the generated docs for the library here](https://doc.deno.land/https://deno.land/x/rusty-result/mod.ts).
+[View the generated docs for the library here](https://doc.deno.land/https://deno.land/x/rusty_result/mod.ts).
+
+```bash
+# NPM
+npm install --save '@urbdyn/rusty-result'
+# Deno
+echo 'export { Result } from "https://deno.land/x/rusty_result/mod.ts";' >> ./deps.ts
+```
+
+## Example Usage
 
 ```typescript
 // Node.js
 import { Result } from '@urbdyn/rusty-result';
 // Deno
-import { Result } from 'https://deno.land/x/rusty-result/mod.ts';
+import { Result } from 'https://deno.land/x/rusty_result/mod.ts';
 
 // Create an ok Result
 const myOkResult = Result.ok(1);
