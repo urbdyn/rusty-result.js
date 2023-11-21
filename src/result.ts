@@ -189,6 +189,24 @@ export class Result<Ok, Error> {
   public error(): Error | undefined {
     return this.isOkInner ? undefined : this.value as Error;
   }
+
+  /**
+   * Matches the value and applies the `okFn` or `errorFn` depending on it.
+   * 
+   * ```ts
+   * // Example usage in a "rust like" form
+   * const r = Result.ok<number, string>(1)
+   * 
+   * const x = r.match(
+   *   (n) => n * 2,
+   *   (s) => parseInt(s),
+   * )
+   * ```
+   */
+  public match<T>(okFn: (ok: Ok) => T, errorFn: (error: Error) => T): T {
+    if (this.isOk()) return okFn(this.unwrap())
+    else return errorFn(this.unwrapError())
+  } 
 }
 
 /** Error for when Result attempts to do action and fails */
